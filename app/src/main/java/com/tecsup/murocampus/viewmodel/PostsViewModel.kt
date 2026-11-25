@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.murocampus.data.PostRepository
 import com.tecsup.murocampus.model.Comentario
+import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -25,6 +26,10 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
     private val _usuarioFiltro = MutableStateFlow<Int?>(null)
     val usuarioFiltro = _usuarioFiltro.asStateFlow()
+
+    // null = aún no se envió ninguna publicación.
+    private val _publicacion = MutableStateFlow<UiState<Post>?>(null)
+    val publicacion = _publicacion.asStateFlow()
 
     init {
         cargar()
@@ -66,5 +71,20 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
                 _detalle.value = UiState.Error(mensajeDe(e))
             }
         }
+    }
+
+    /** Envía un POST con el cuerpo del formulario; el resultado se muestra en la pantalla crear. */
+    fun publicar(titulo: String, texto: String) {
+        viewModelScope.launch {
+            _publicacion.value = UiState.Cargando
+            repo.crear(NuevoPost(userId = 1, title = titulo, body = texto))
+                .onSuccess { _publicacion.value = UiState.Exito(it) }
+                .onFailure { _publicacion.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    /** Al volver a abrir el formulario se borra el resultado anterior. */
+    fun limpiarPublicacion() {
+        _publicacion.value = null
     }
 }

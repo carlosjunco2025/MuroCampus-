@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.murocampus.data.PostRepositoryRemote
+import com.tecsup.murocampus.ui.PantallaCrear
 import com.tecsup.murocampus.ui.PantallaDetalle
 import com.tecsup.murocampus.ui.PantallaLista
 import com.tecsup.murocampus.ui.theme.MuroCampusTheme
@@ -36,8 +38,12 @@ class MainActivity : ComponentActivity() {
             MuroCampusTheme {
                 // null = se ve la lista; si tiene id, se ve el detalle de esa publicación.
                 var idSeleccionado by remember { mutableStateOf<Int?>(null) }
+                var mostrarCrear by remember { mutableStateOf(false) }
 
-                BackHandler(enabled = idSeleccionado != null) {
+                BackHandler(enabled = mostrarCrear) {
+                    mostrarCrear = false
+                }
+                BackHandler(enabled = idSeleccionado != null && !mostrarCrear) {
                     idSeleccionado = null
                 }
 
@@ -49,6 +55,18 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    floatingActionButton = {
+                        if (idSeleccionado == null && !mostrarCrear) {
+                            FloatingActionButton(
+                                onClick = {
+                                    vm.limpiarPublicacion()
+                                    mostrarCrear = true
+                                }
+                            ) {
+                                Text("+")
+                            }
+                        }
+                    },
                     topBar = {
                         TopAppBar(
                             title = {
@@ -67,8 +85,13 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                     val id = idSeleccionado
-                    if (id == null) {
-                        PantallaLista(
+                    when {
+                        mostrarCrear -> PantallaCrear(
+                            vm = vm,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+
+                        id == null -> PantallaLista(
                             vm = vm,
                             onAbrir = { postId ->
                                 idSeleccionado = postId
@@ -76,8 +99,8 @@ class MainActivity : ComponentActivity() {
                             },
                             modifier = Modifier.padding(innerPadding)
                         )
-                    } else {
-                        PantallaDetalle(
+
+                        else -> PantallaDetalle(
                             vm = vm,
                             id = id,
                             modifier = Modifier.padding(innerPadding)
