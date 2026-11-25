@@ -14,12 +14,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.murocampus.data.PostRepositoryRemote
 import com.tecsup.murocampus.ui.PantallaCrear
@@ -36,9 +39,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MuroCampusTheme {
-                // null = se ve la lista; si tiene id, se ve el detalle de esa publicación.
-                var idSeleccionado by remember { mutableStateOf<Int?>(null) }
-                var mostrarCrear by remember { mutableStateOf(false) }
+                var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+                var mostrarCrear by rememberSaveable { mutableStateOf(false) }
 
                 BackHandler(enabled = mostrarCrear) {
                     mostrarCrear = false
@@ -53,17 +55,30 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
+                LaunchedEffect(idSeleccionado) {
+                    idSeleccionado?.let { id ->
+                        vm.abrir(id)
+                    }
+                }
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background,
                     floatingActionButton = {
                         if (idSeleccionado == null && !mostrarCrear) {
                             FloatingActionButton(
                                 onClick = {
                                     vm.limpiarPublicacion()
                                     mostrarCrear = true
-                                }
+                                },
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White
                             ) {
-                                Text("+")
+                                Text(
+                                    text = "+",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     },
@@ -74,12 +89,12 @@ class MainActivity : ComponentActivity() {
                                     text = "MuroCampus",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = Color.White
                                 )
                             },
                             colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimary
+                                titleContentColor = Color.White
                             )
                         )
                     }
