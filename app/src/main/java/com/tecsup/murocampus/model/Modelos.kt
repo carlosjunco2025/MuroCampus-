@@ -29,10 +29,25 @@ data class Comentario(
     val body: String
 )
 
+/** Cuerpo que enviamos al crear un comentario (POST posts/{id}/comments). */
+@Serializable
+data class NuevoComentario(
+    val postId: Int,
+    val name: String,
+    val email: String,
+    val body: String
+)
+
 /** Cuerpo que enviamos al crear (POST posts): todavía no tiene id. */
 @Serializable
 data class NuevoPost(
     val userId: Int,
     val title: String,
     val body: String
+)
+
+/** Cuerpo para actualizar solo el título de una publicación (PATCH posts/{id}). */
+@Serializable
+data class ActualizarTitulo(
+    val title: String
 )
